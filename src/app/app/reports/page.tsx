@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Printer } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '@/components/AppProvider'
-import { Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner } from '@/components/ui'
+import { inputAuto, Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner } from '@/components/ui'
 import { crShort, daysBetween, fmtDate, inr, titleCase, todayISO } from '@/lib/format'
 import { downloadCSV } from '@/lib/csv'
 
@@ -77,8 +77,8 @@ export default function Reports() {
   return (
     <div>
       <PageHeader title="Reports & Analytics" subtitle="Figures are computed from your recorded data for the selected filters" actions={<>
-        <select className={inputCls + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{d.projects.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-        <input type="date" className={inputCls + ' w-auto'} value={from} onChange={e => setFrom(e.target.value)} /><input type="date" className={inputCls + ' w-auto'} value={to} onChange={e => setTo(e.target.value)} /></>} />
+        <select className={inputAuto + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{d.projects.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+        <input type="date" className={inputAuto + ' w-auto'} value={from} onChange={e => setFrom(e.target.value)} /><input type="date" className={inputAuto + ' w-auto'} value={to} onChange={e => setTo(e.target.value)} /></>} />
       <div className="grid gap-4 lg:grid-cols-3 no-print">
         <Card className="p-5 lg:col-span-2"><CardTitle>Project progress vs time elapsed</CardTitle><div className="h-56"><ResponsiveContainer><BarChart data={prog}><CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" /><XAxis dataKey="name" tick={{ fontSize: 10 }} /><YAxis tick={{ fontSize: 11 }} domain={[0, 100]} /><Tooltip /><Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} /><Bar dataKey="Time elapsed" fill="#c7d7fe" radius={[4, 4, 0, 0]} /><Bar dataKey="Actual" fill="#2250e8" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div></Card>
         <Card className="p-5"><CardTitle>Budget vs actual</CardTitle><div className="relative h-56"><ResponsiveContainer><PieChart><Pie data={donut} dataKey="v" nameKey="n" innerRadius={55} outerRadius={80} stroke="none">{donut.map(x => <Cell key={x.n} fill={x.c} />)}</Pie><Tooltip formatter={(v: any) => inr(Number(v))} /><Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} /></PieChart></ResponsiveContainer>
@@ -86,7 +86,7 @@ export default function Reports() {
       </div>
       <Card className="mt-4 p-5">
         <div className="no-print mb-3 flex flex-wrap items-center gap-2">
-          <select className={inputCls + ' w-auto font-semibold'} value={type} onChange={e => setType(e.target.value)}>{Object.entries(built.R).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
+          <select className={inputAuto + ' w-auto font-semibold'} value={type} onChange={e => setType(e.target.value)}>{Object.entries(built.R).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
           <div className="ml-auto flex gap-2"><Btn variant="secondary" onClick={() => window.print()}><Printer size={14} /> Print</Btn><Btn onClick={() => downloadCSV(rep.label.replace(/\s+/g, '-').toLowerCase(), rep.columns, rep.rows)} disabled={!rep.rows.length}>Export CSV</Btn></div>
         </div>
         <h3 className="mb-1 text-base font-bold">{rep.label}</h3><p className="mb-3 text-xs text-slate-400">{project ? built.ps[0]?.name : 'All projects'} · {fmtDate(from)} to {fmtDate(to)}</p>

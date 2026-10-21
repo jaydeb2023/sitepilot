@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/Logo'
@@ -11,6 +11,8 @@ export default function SignupPage() {
   const [done, setDone] = useState(false)
   const [busy, setBusy] = useState(false)
   const set = (k: string, v: string) => setF(s => ({ ...s, [k]: v }))
+
+  useEffect(() => { createClient().auth.getUser().then(({ data }: any) => { if (data?.user) window.location.href = '/app' }) }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setErr('')

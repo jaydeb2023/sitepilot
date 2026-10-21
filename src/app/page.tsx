@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import {
   ArrowRight, BarChart3, Building2, Check, ClipboardList, HardHat, Home, Landmark, Package, Paintbrush,
-  Hammer, Sparkles, Users, Wallet, TrendingUp, Clock, ShieldCheck, Smartphone,
+  Hammer, Sparkles, Users, Wallet, TrendingUp, Clock, ShieldCheck, Smartphone, ChevronDown,
 } from 'lucide-react'
 import { Logo, LogoMark } from '@/components/Logo'
 
@@ -19,36 +19,6 @@ function Skyline() {
       <g stroke="#93c5fd" strokeWidth="3" fill="none" opacity=".7"><path d="M590 420V70M520 70h150M590 70l-48 34M590 70l40 30M650 70v50" /></g>
       <rect y="400" width="800" height="20" fill="#050c1c" opacity=".6" />
     </svg>
-  )
-}
-
-function DeviceMock() {
-  const bars = [30, 44, 38, 56, 48, 66, 74]
-  return (
-    <div className="relative mx-auto w-full max-w-[520px]">
-      <div className="rounded-2xl border-[6px] border-slate-800 bg-slate-800 shadow-2xl">
-        <div className="flex overflow-hidden rounded-lg bg-slate-50">
-          <div className="w-14 bg-navy-900 p-2">{[0, 1, 2, 3, 4, 5].map(i => <div key={i} className={`mb-2 h-3 rounded ${i === 0 ? 'bg-brand-500' : 'bg-white/15'}`} />)}</div>
-          <div className="flex-1 p-3">
-            <div className="mb-2 grid grid-cols-4 gap-1.5">
-              {['8', '₹45 Cr', '₹28 Cr', '72%'].map(v => <div key={v} className="rounded bg-white p-1.5 text-center text-[10px] font-bold text-slate-700 shadow">{v}</div>)}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2 rounded bg-white p-2 shadow">
-                <div className="flex h-20 items-end gap-1.5">{bars.map((b, i) => <div key={i} className="flex-1 rounded-t bg-brand-500/80" style={{ height: `${b}%` }} />)}</div>
-              </div>
-              <div className="flex items-center justify-center rounded bg-white p-2 shadow">
-                <div className="h-14 w-14 rounded-full border-[7px] border-emerald-400 border-r-red-400 border-t-brand-500" />
-              </div>
-            </div>
-            <div className="mt-2 space-y-1">{[0, 1, 2].map(i => <div key={i} className="h-3 rounded bg-white shadow" />)}</div>
-          </div>
-        </div>
-      </div>
-      <div className="absolute -bottom-6 -right-2 w-24 rounded-2xl border-4 border-slate-800 bg-slate-800 shadow-xl sm:w-28">
-        <div className="rounded-lg bg-white p-2"><div className="mb-1.5 h-9 rounded bg-brand-600" /><div className="mb-1 h-3 rounded bg-slate-100" /><div className="grid grid-cols-2 gap-1"><div className="h-8 rounded bg-emerald-100" /><div className="h-8 rounded bg-amber-100" /></div></div>
-      </div>
-    </div>
   )
 }
 
@@ -80,6 +50,7 @@ export default function Landing() {
             <a href="#top" className="text-white">Home</a><a href="#features" className="hover:text-white">Features</a>
             <a href="#solutions" className="hover:text-white">Solutions</a><a href="#pricing" className="hover:text-white">Pricing</a>
             <a href="#about" className="hover:text-white">About</a>
+            <a href="#features" className="inline-flex items-center gap-1 hover:text-white">Resources <ChevronDown size={14} /></a>
           </nav>
           <div className="flex items-center gap-2">
             <Link href="/login" className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">Login</Link>
@@ -91,7 +62,11 @@ export default function Landing() {
       {/* Hero */}
       <section id="top" className="relative overflow-hidden bg-navy-900">
         <Skyline />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/90 to-transparent" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hero.jpg" alt="Site engineer checking project progress on a tablet at a construction site" width={844} height={704} fetchPriority="high"
+          className="absolute inset-y-0 right-0 h-full w-full object-cover object-[75%_center] opacity-40 lg:w-[60%] lg:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/80 to-navy-900/5 lg:via-navy-900/55" />
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-navy-900/80 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-slate-200">
             <LogoMark size={16} /> Construction Management Made Simple
@@ -125,7 +100,12 @@ export default function Landing() {
       {/* All in one */}
       <section className="bg-gradient-to-b from-brand-50/60 to-white py-16">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
-          <DeviceMock />
+          <div className="relative">
+            <div className="absolute inset-x-6 bottom-2 top-10 rounded-full bg-brand-200/50 blur-3xl" aria-hidden />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/devices.jpg" alt="SitePilot dashboard on laptop, tablet and phone" width={952} height={612} loading="lazy"
+              className="relative mx-auto w-full max-w-[560px] mix-blend-multiply" />
+          </div>
           <div>
             <span className="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-700">All-in-one platform</span>
             <h2 className="mt-4 text-3xl font-extrabold text-slate-900 sm:text-4xl">Plan. Execute. Monitor. <span className="text-brand-600">Deliver.</span></h2>
@@ -163,6 +143,7 @@ export default function Landing() {
           <div className="mt-10 grid gap-4 md:grid-cols-4">
             {[['Plan', 'Create projects, assign teams and set budgets.'], ['Execute', 'Track daily work, labour and materials on site.'], ['Monitor', 'Get real-time progress and cost updates.'], ['Deliver', 'Complete projects on time and within budget.']].map(([t, d], i) => (
               <div key={t} className="relative flex gap-3 rounded-2xl bg-white p-5 shadow-card">
+                {i < 3 && <ArrowRight size={18} className="absolute -right-[18px] top-1/2 z-10 hidden -translate-y-1/2 text-brand-400 md:block" />}
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 font-bold text-white">{i + 1}</span>
                 <div><h3 className="font-semibold text-slate-900">{t}</h3><p className="mt-1 text-sm text-slate-500">{d}</p></div>
               </div>
@@ -199,7 +180,9 @@ export default function Landing() {
       {/* CTA */}
       <section id="about" className="relative overflow-hidden bg-navy-900">
         <Skyline />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-900 to-navy-900/60" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hero.jpg" alt="" loading="lazy" className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-25 md:w-1/2 md:opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/85 to-navy-900/30" />
         <div className="relative mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-14 sm:px-6">
           <div>
             <h2 className="text-3xl font-extrabold text-white">Ready to Transform Your <span className="text-cyan-300">Construction Business?</span></h2>
@@ -212,13 +195,14 @@ export default function Landing() {
         </div>
       </section>
 
-      <footer className="bg-navy-950 py-10 text-sm text-slate-400">
-        <div className="mx-auto flex max-w-7xl flex-wrap justify-between gap-6 px-4 sm:px-6">
-          <div><Logo /><p className="mt-3 max-w-xs text-xs">A product of Evynta — AI, Web &amp; Data Solutions.</p></div>
-          <div className="flex gap-12 text-xs"><div className="space-y-2"><div className="font-semibold text-white">Product</div><a href="#features" className="block">Features</a><a href="#pricing" className="block">Pricing</a></div>
-            <div className="space-y-2"><div className="font-semibold text-white">Account</div><Link href="/login" className="block">Login</Link><Link href="/signup" className="block">Sign up</Link><Link href="/demo" className="block">Book a demo</Link></div></div>
+      <footer className="bg-navy-950 py-12 text-sm text-slate-400">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div><Logo /><p className="mt-3 max-w-xs text-xs leading-relaxed">A product of Evynta — AI, Web &amp; Data Solutions. Built for Indian builders and contractors.</p></div>
+          <div className="space-y-2 text-xs"><div className="font-semibold text-white">Product</div><a href="#features" className="block hover:text-white">Features</a><a href="#pricing" className="block hover:text-white">Pricing</a><a href="#solutions" className="block hover:text-white">Solutions</a></div>
+          <div className="space-y-2 text-xs"><div className="font-semibold text-white">Company</div><a href="#about" className="block hover:text-white">About</a><Link href="/demo" className="block hover:text-white">Contact</Link><Link href="/demo" className="block hover:text-white">Book a demo</Link></div>
+          <div className="space-y-2 text-xs"><div className="font-semibold text-white">Account</div><Link href="/login" className="block hover:text-white">Login</Link><Link href="/signup" className="block hover:text-white">Start free trial</Link></div>
         </div>
-        <p className="mx-auto mt-8 max-w-7xl px-4 text-xs sm:px-6">© {new Date().getFullYear()} SitePilot by Evynta. All rights reserved.</p>
+        <p className="mx-auto mt-10 max-w-7xl border-t border-white/10 px-4 pt-6 text-xs sm:px-6">© {new Date().getFullYear()} SitePilot by Evynta. All rights reserved.</p>
       </footer>
     </div>
   )

@@ -90,7 +90,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           const Icon = ICONS[n.icon]
           return (
             <Link key={n.href} href={n.href}
-              className={cn('flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition',
+              className={cn('flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
                 isActive(n.href) ? 'bg-brand-600 text-white shadow' : 'text-slate-300 hover:bg-white/5 hover:text-white')}>
               <Icon size={18} /> {n.label}
             </Link>

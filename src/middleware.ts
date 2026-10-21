@@ -5,4 +5,4 @@ export async function middleware(request: NextRequest) {
   return updateSession(request)
 }
 
-export const config = { matcher: ['/app/:path*', '/login', '/signup'] }
+export const config = { matcher: ['/app/:path*'] }

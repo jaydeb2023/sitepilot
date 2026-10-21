@@ -101,7 +101,16 @@ supabase/migrations/   SQL (schema, security, seed, storage)
 src/app/               pages: landing, login, signup, demo, /app/* modules, /api/ai, /api/team/invite
 src/components/        AppShell, DataModule (generic CRUD), ReportForm, UI kit
 src/lib/               supabase clients, permissions, formatting, AI context
+public/images/         hero.jpg, devices.jpg, projects/<project-name>.jpg
 ```
+
+### Replacing images
+Drop higher-resolution files with the **same names** into `public/images/` (hero ≈ 1600×1100, devices ≈ 1400×900).
+Project photos go in `public/images/projects/<slug>.jpg` (slug = project name, lowercase, hyphens) and the slug must be added to `PHOTOS` in `src/components/ProjectArt.tsx`.
+
+### Performance notes
+All `/app/*` module pages are statically prebuilt and prefetched; middleware only checks for a session cookie (no network call).
+Keep your Supabase project in a region close to users (Mumbai `ap-south-1` for India); `vercel.json` pins API routes to `bom1`.
 
 ## Testing checklist (maps to BRD acceptance criteria)
 - Sign up two separate companies → neither sees the other's data.

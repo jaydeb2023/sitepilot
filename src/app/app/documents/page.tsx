@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Download, FileText, Trash2, Upload } from 'lucide-react'
 import { useApp } from '@/components/AppProvider'
-import { Btn, Card, Empty, inputCls, Modal, PageHeader, Spinner, Label } from '@/components/ui'
+import { inputAuto, Btn, Card, Empty, inputCls, Modal, PageHeader, Spinner, Label } from '@/components/ui'
 import { fmtDate } from '@/lib/format'
 import { BUCKET, uploadFile } from '@/lib/upload'
 import { MANAGERS } from '@/lib/permissions'
@@ -59,9 +59,9 @@ export default function Documents() {
       <PageHeader title="Documents" subtitle="Drawings, contracts, bills and certificates — stored privately per company"
         actions={<Btn onClick={() => setUp(true)}><Upload size={15} /> Upload</Btn>} />
       <div className="mb-4 flex flex-wrap gap-2">
-        <input className={inputCls + ' w-56'} placeholder="Search files…" value={q} onChange={e => setQ(e.target.value)} />
-        <select className={inputCls + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-        <select className={inputCls + ' w-auto'} value={cat} onChange={e => setCat(e.target.value)}><option value="">All types</option>{CATS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select>
+        <input className={inputAuto + ' w-56'} placeholder="Search files…" value={q} onChange={e => setQ(e.target.value)} />
+        <select className={inputAuto + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+        <select className={inputAuto + ' w-auto'} value={cat} onChange={e => setCat(e.target.value)}><option value="">All types</option>{CATS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select>
       </div>
       {!rows ? <Spinner /> : list.length === 0 ? <Empty title="No documents yet" hint="Upload PDFs, images, Word or Excel files up to 15 MB." /> : (
         <Card className="divide-y divide-slate-50">

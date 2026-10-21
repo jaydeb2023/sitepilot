@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useApp } from '@/components/AppProvider'
-import { Badge, Btn, Card, CardTitle, inputCls, Label, PageHeader, Spinner, Tabs } from '@/components/ui'
+import { inputAuto, Badge, Btn, Card, CardTitle, inputCls, Label, PageHeader, Spinner, Tabs } from '@/components/ui'
 import { fmtDate } from '@/lib/format'
 import { ROLE_LABEL, Role } from '@/lib/permissions'
 
@@ -76,7 +76,7 @@ export default function Settings() {
               <div key={m.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1"><div className="text-sm font-medium text-slate-900">{m.full_name} {m.id === profile.id && <span className="text-xs text-slate-400">(you)</span>}</div><div className="text-xs text-slate-400">{m.email}</div></div>
                 {isOwner && m.id !== profile.id ? (
-                  <><select className={inputCls + ' w-auto'} value={m.role} onChange={e => update(m.id, { role: e.target.value })}>{(['owner', ...INVITE_ROLES] as Role[]).map(r => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select>
+                  <><select className={inputAuto + ' w-auto'} value={m.role} onChange={e => update(m.id, { role: e.target.value })}>{(['owner', ...INVITE_ROLES] as Role[]).map(r => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select>
                     <Btn size="sm" variant={m.active ? 'danger' : 'success'} onClick={() => update(m.id, { active: !m.active })}>{m.active ? 'Deactivate' : 'Activate'}</Btn></>
                 ) : <><Badge tone="blue">{ROLE_LABEL[m.role as Role]}</Badge>{!m.active && <Badge>Inactive</Badge>}</>}
               </div>))}

@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { ArrowLeftRight } from 'lucide-react'
 import DataModule, { FieldDef, FormModal } from '@/components/DataModule'
 import { useApp } from '@/components/AppProvider'
-import { Badge, Btn, Card, Empty, inputCls, PageHeader, Spinner, StatusBadge, Tabs } from '@/components/ui'
+import { inputAuto, Badge, Btn, Card, Empty, inputCls, PageHeader, Spinner, StatusBadge, Tabs } from '@/components/ui'
 import { fmtDate, todayISO } from '@/lib/format'
 import { MANAGERS } from '@/lib/permissions'
 import { opt, UNITS } from '@/lib/fields'
@@ -30,8 +30,8 @@ function StockBalance() {
   const statusOf = (r: any) => r.balance <= 0 ? 'out' : r.balance <= Number(r.material.min_stock) ? 'low_stock' : 'ok'
   return (
     <div>
-      <div className="mb-3 flex flex-wrap gap-2"><input className={inputCls + ' w-56'} placeholder="Search material…" value={q} onChange={e => setQ(e.target.value)} />
-        <select className={inputCls + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All sites</option>{projects.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+      <div className="mb-3 flex flex-wrap gap-2"><input className={inputAuto + ' w-56'} placeholder="Search material…" value={q} onChange={e => setQ(e.target.value)} />
+        <select className={inputAuto + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All sites</option>{projects.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
       {list.length === 0 ? <Empty title="No stock recorded" hint="Record an opening stock or a receipt in the Movements tab." /> : (
         <Card className="overflow-x-auto"><table className="w-full min-w-[560px] text-sm"><thead><tr className="border-b bg-slate-50/70 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
           {['Material', 'Site', 'Unit', 'Stock', 'Reorder level', 'Status'].map(h => <th key={h} className="px-4 py-2.5">{h}</th>)}</tr></thead>

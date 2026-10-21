@@ -5,7 +5,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Camera, Minus, Plus, X } from 'lucide-react'
 import { useApp } from './AppProvider'
-import { Btn, Card, CardTitle, inputCls, Label, Spinner } from './ui'
+import { inputAuto, Btn, Card, CardTitle, inputCls, Label, Spinner } from './ui'
 import { useSignedUrls } from './useSignedUrls'
 import { TRADES } from '@/lib/fields'
 import { todayISO } from '@/lib/format'
@@ -116,7 +116,7 @@ export default function ReportForm({ reportId }: { reportId?: string }) {
               <div key={i} className="mb-2 flex items-center gap-2">
                 <select className={inputCls} value={w.trade} onChange={e => setWorkers(x => x.map((y, j) => j === i ? { ...y, trade: e.target.value } : y))}>{TRADES.map(t => <option key={t}>{t}</option>)}</select>
                 <div className="flex items-center gap-1"><button onClick={() => setWorkers(x => x.map((y, j) => j === i ? { ...y, count: Math.max(0, y.count - 1) } : y))} className="rounded border p-1.5"><Minus size={12} /></button>
-                  <input type="number" min={0} className={inputCls + ' w-16 text-center'} value={w.count} onChange={e => setWorkers(x => x.map((y, j) => j === i ? { ...y, count: Number(e.target.value) } : y))} />
+                  <input type="number" min={0} className={inputAuto + ' w-16 text-center'} value={w.count} onChange={e => setWorkers(x => x.map((y, j) => j === i ? { ...y, count: Number(e.target.value) } : y))} />
                   <button onClick={() => setWorkers(x => x.map((y, j) => j === i ? { ...y, count: y.count + 1 } : y))} className="rounded border p-1.5"><Plus size={12} /></button></div>
                 <button onClick={() => setWorkers(x => x.filter((_, j) => j !== i))} className="text-slate-300 hover:text-red-500"><X size={14} /></button>
               </div>))}
@@ -126,7 +126,7 @@ export default function ReportForm({ reportId }: { reportId?: string }) {
             {used.map((m, i) => (
               <div key={i} className="mb-2 flex items-center gap-2">
                 <select className={inputCls} value={m.material} onChange={e => setUsed(x => x.map((y, j) => j === i ? { ...y, material: e.target.value, unit: materials.find(a => a.name === e.target.value)?.unit || '' } : y))}><option value="">Material…</option>{materials.map(a => <option key={a.name}>{a.name}</option>)}</select>
-                <input type="number" min={0} className={inputCls + ' w-24'} value={m.qty} onChange={e => setUsed(x => x.map((y, j) => j === i ? { ...y, qty: Number(e.target.value) } : y))} />
+                <input type="number" min={0} className={inputAuto + ' w-24'} value={m.qty} onChange={e => setUsed(x => x.map((y, j) => j === i ? { ...y, qty: Number(e.target.value) } : y))} />
                 <span className="w-10 text-xs text-slate-400">{m.unit}</span>
                 <button onClick={() => setUsed(x => x.filter((_, j) => j !== i))} className="text-slate-300 hover:text-red-500"><X size={14} /></button>
               </div>))}

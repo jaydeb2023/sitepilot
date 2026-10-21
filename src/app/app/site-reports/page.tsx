@@ -4,7 +4,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Plus } from 'lucide-react'
 import { useApp } from '@/components/AppProvider'
-import { Btn, Card, Empty, inputCls, Modal, PageHeader, Spinner, StatusBadge } from '@/components/ui'
+import { inputAuto, Btn, Card, Empty, inputCls, Modal, PageHeader, Spinner, StatusBadge } from '@/components/ui'
 import { useSignedUrls } from '@/components/useSignedUrls'
 import ProjectArt from '@/components/ProjectArt'
 import { fmtDate } from '@/lib/format'
@@ -51,17 +51,17 @@ export default function SiteReports() {
       <PageHeader title="Daily Site Reports" subtitle="Submitted by engineers, reviewed by managers"
         actions={can(['owner', 'manager', 'engineer']) && <Link href="/app/site-reports/new"><Btn><Plus size={15} /> New Report</Btn></Link>} />
       <div className="mb-4 flex flex-wrap gap-2">
-        <input className={inputCls + ' w-48'} placeholder="Search reports…" value={q} onChange={e => setQ(e.target.value)} />
-        <select className={inputCls + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
-        <select className={inputCls + ' w-auto'} value={status} onChange={e => setStatus(e.target.value)}><option value="">All status</option><option value="submitted">Submitted</option><option value="approved">Approved</option><option value="correction_requested">Correction requested</option></select>
-        <input type="date" className={inputCls + ' w-auto'} value={from} onChange={e => setFrom(e.target.value)} /><input type="date" className={inputCls + ' w-auto'} value={to} onChange={e => setTo(e.target.value)} />
+        <input className={inputAuto + ' w-48'} placeholder="Search reports…" value={q} onChange={e => setQ(e.target.value)} />
+        <select className={inputAuto + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+        <select className={inputAuto + ' w-auto'} value={status} onChange={e => setStatus(e.target.value)}><option value="">All status</option><option value="submitted">Submitted</option><option value="approved">Approved</option><option value="correction_requested">Correction requested</option></select>
+        <input type="date" className={inputAuto + ' w-auto'} value={from} onChange={e => setFrom(e.target.value)} /><input type="date" className={inputAuto + ' w-auto'} value={to} onChange={e => setTo(e.target.value)} />
       </div>
       {!rows ? <Spinner /> : list.length === 0 ? <Empty title="No site reports found" hint="Reports submitted by your site team will appear here." /> : (
         <div className="grid gap-3 md:grid-cols-2">
           {list.map(r => (
             <Card key={r.id} className="flex cursor-pointer gap-3 p-4 hover:shadow-lg" >
               <div onClick={() => { setOpen(r); setNote(r.review_note || '') }} className="flex w-full gap-3">
-                <ProjectArt seed={r.project?.name || r.id} className="h-20 w-28 shrink-0 rounded-lg" />
+                <ProjectArt photo seed={r.project?.name || r.id} className="h-20 w-28 shrink-0 rounded-lg" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2"><h3 className="truncate font-semibold text-slate-900">{r.project?.name}</h3><StatusBadge status={r.status} /></div>
                   <p className="text-xs text-slate-500">{fmtDate(r.report_date)} · {r.site_name || 'Site'} · {r.workers_present} workers · {r.photo_paths?.length || 0} photos</p>

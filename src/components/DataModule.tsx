@@ -3,7 +3,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Download, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useApp } from './AppProvider'
-import { Btn, Card, Empty, inputCls, Label, Modal, Spinner } from './ui'
+import { inputAuto, Btn, Card, Empty, inputCls, Label, Modal, Spinner } from './ui'
 import { downloadCSV } from '@/lib/csv'
 import { MANAGERS, Role } from '@/lib/permissions'
 
@@ -148,11 +148,13 @@ type Props = {
 }
 
 const PER_PAGE = 15
+const rowCache = new Map<string, any[]>()   // stale-while-revalidate across page visits
+const cacheKey = (t: string, s: string | undefined, ...f: string[]) => [t, s || '*', ...f].join('|')
 
 export default function DataModule(p: Props) {
   const { sb, role, companyId } = useApp()
-  const [rows, setRows] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [rows, setRows] = useState<any[]>(() => rowCache.get(cacheKey(p.table, p.select, '', '', '', '')) || [])
+  const [loading, setLoading] = useState(() => !rowCache.has(cacheKey(p.table, p.select, '', '', '', '')))
   const [q, setQ] = useState('')
   const [project, setProject] = useState('')
   const [status, setStatus] = useState('')
@@ -172,7 +174,9 @@ export default function DataModule(p: Props) {
   }, [sb, p.projectFilter])
 
   const load = useCallback(async () => {
-    setLoading(true)
+    const ck = cacheKey(p.table, p.select, project, status, from, to)
+    const hit = rowCache.get(ck)
+    if (hit) { setRows(hit); setLoading(false) } else setLoading(true)
     let query = sb.from(p.table).select(p.select || '*')
     if (p.projectFilter && project) query = query.eq('project_id', project)
     if (p.statusFilter && status) query = query.eq(p.statusFilter.column, status)
@@ -181,6 +185,7 @@ export default function DataModule(p: Props) {
     const o = p.order || { column: 'created_at', ascending: false }
     const { data, error } = await query.order(o.column, { ascending: o.ascending ?? false }).limit(1000)
     if (error) toast.error(error.message)
+    rowCache.set(ck, data || [])
     setRows(data || [])
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -232,22 +237,22 @@ export default function DataModule(p: Props) {
           <input value={q} onChange={e => setQ(e.target.value)} placeholder={p.searchPlaceholder || 'Search…'} className={inputCls + ' pl-9'} />
         </div>
         {p.projectFilter && (
-          <select value={project} onChange={e => setProject(e.target.value)} className={inputCls + ' w-auto'}>
+          <select value={project} onChange={e => setProject(e.target.value)} className={inputAuto + ' w-auto'}>
             <option value="">All projects</option>
             {projects.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         )}
         {p.statusFilter && (
-          <select value={status} onChange={e => setStatus(e.target.value)} className={inputCls + ' w-auto'}>
+          <select value={status} onChange={e => setStatus(e.target.value)} className={inputAuto + ' w-auto'}>
             <option value="">{p.statusFilter.label || 'All statuses'}</option>
             {p.statusFilter.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
         )}
         {p.dateFilter && (
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls + ' w-auto'} aria-label="From date" />
+            <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputAuto + ' w-auto'} aria-label="From date" />
             –
-            <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls + ' w-auto'} aria-label="To date" />
+            <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputAuto + ' w-auto'} aria-label="To date" />
           </div>
         )}
         <div className="ml-auto flex flex-wrap items-center gap-2">

@@ -24,16 +24,21 @@ export function useApp() {
 }
 
 export default function AppProvider({ children }: { children: ReactNode }) {
-  const sb = useMemo(() => createClient(), [])
+  const sb = useMemo(() => (typeof window === 'undefined' ? null : createClient()), [])
   const [state, setState] = useState<{ user: any; profile: any; subscription: any } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    const { data: { user } } = await sb.auth.getUser()
+    if (!sb) return
+    const { data: { session } } = await sb.auth.getSession()   // local read, no network round trip
+    const user = session?.user
     if (!user) { window.location.href = '/login'; return }
-    const { data: profile, error: pe } = await sb.from('profiles').select('*, company:companies(id,name)').eq('id', user.id).maybeSingle()
+    const [{ data: profile, error: pe }, { data: subscription }] = await Promise.all([
+      sb.from('profiles').select('*, company:companies(id,name)').eq('id', user.id).maybeSingle(),
+      sb.from('subscriptions').select('*').maybeSingle(),
+    ])
+    if (pe && /jwt|token|auth/i.test(pe.message || '')) { window.location.href = '/login'; return }
     if (pe || !profile || !profile.active) { setError(pe?.message || 'Your account is not linked to an active workspace. Please contact your administrator.'); return }
-    const { data: subscription } = await sb.from('subscriptions').select('*').maybeSingle()
     setState({ user, profile, subscription })
   }, [sb])
 
@@ -47,7 +52,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
       </div>
     )
   }
-  if (!state) return <div className="min-h-screen"><Spinner label="Loading your workspace…" /></div>
+  if (!sb || !state) return <div className="min-h-screen"><Spinner label="Loading your workspace…" /></div>
 
   const role = state.profile.role as Role
   const value: Ctx = {

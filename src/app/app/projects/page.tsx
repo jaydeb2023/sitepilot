@@ -4,16 +4,18 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Plus, Search } from 'lucide-react'
 import { useApp } from '@/components/AppProvider'
-import { Btn, Card, Empty, inputCls, PageHeader, Progress, Spinner, StatusBadge } from '@/components/ui'
+import { inputAuto, Btn, Card, Empty, inputCls, PageHeader, Progress, Spinner, StatusBadge } from '@/components/ui'
 import { FormModal } from '@/components/DataModule'
 import ProjectArt from '@/components/ProjectArt'
 import { projectFields, opt, PROJECT_TYPES } from '@/lib/fields'
 import { fmtDate, inr } from '@/lib/format'
 import { MANAGERS } from '@/lib/permissions'
 
+let projectsCache: any[] | null = null
+
 export default function ProjectsPage() {
   const { sb, can } = useApp()
-  const [rows, setRows] = useState<any[] | null>(null)
+  const [rows, setRows] = useState<any[] | null>(projectsCache)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [type, setType] = useState('')
@@ -22,6 +24,7 @@ export default function ProjectsPage() {
   const load = useCallback(async () => {
     const { data, error } = await sb.from('projects').select('*').order('created_at', { ascending: false })
     if (error) toast.error(error.message)
+    projectsCache = data || []
     setRows(data || [])
   }, [sb])
   useEffect(() => { load(); setQ(new URLSearchParams(window.location.search).get('q') || '') }, [load])
@@ -37,8 +40,8 @@ export default function ProjectsPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative min-w-[200px] flex-1 sm:max-w-xs"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input className={inputCls + ' pl-9'} placeholder="Search projects…" value={q} onChange={e => setQ(e.target.value)} /></div>
-        <select className={inputCls + ' w-auto'} value={status} onChange={e => setStatus(e.target.value)}><option value="">All status</option>{opt('planning', 'on_track', 'delayed', 'at_risk', 'completed').map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-        <select className={inputCls + ' w-auto'} value={type} onChange={e => setType(e.target.value)}><option value="">All types</option>{PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}</select>
+        <select className={inputAuto + ' w-auto'} value={status} onChange={e => setStatus(e.target.value)}><option value="">All status</option>{opt('planning', 'on_track', 'delayed', 'at_risk', 'completed').map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+        <select className={inputAuto + ' w-auto'} value={type} onChange={e => setType(e.target.value)}><option value="">All types</option>{PROJECT_TYPES.map(t => <option key={t}>{t}</option>)}</select>
       </div>
       {!rows ? <Spinner /> : list.length === 0 ? (
         <Empty title="No projects found" hint={can(MANAGERS) ? 'Create your first project to start tracking sites, labour, materials and costs.' : 'You have not been assigned to any project yet.'}

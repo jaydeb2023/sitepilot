@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import { Building2, IndianRupee, Wallet, FileCheck2, PackageSearch, Users, AlertTriangle } from 'lucide-react'
 import { Area, AreaChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '@/components/AppProvider'
-import { Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner, StatTile, StatusBadge, Tabs } from '@/components/ui'
+import { inputAuto, Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner, StatTile, StatusBadge, Tabs } from '@/components/ui'
 import ProjectArt from '@/components/ProjectArt'
 import { crShort, daysBetween, fmtDate, inr, todayISO } from '@/lib/format'
 import { FINANCE, MANAGERS } from '@/lib/permissions'
@@ -13,10 +13,12 @@ import { FINANCE, MANAGERS } from '@/lib/permissions'
 const STATUS_COLORS: Record<string, string> = { on_track: '#2250e8', delayed: '#ef4444', at_risk: '#f59e0b', completed: '#22c55e', planning: '#94a3b8' }
 const STATUS_LABEL: Record<string, string> = { on_track: 'On Track', delayed: 'Delayed', at_risk: 'At Risk', completed: 'Completed', planning: 'Planning' }
 
+let overviewCache: any = null
+
 export default function Overview() {
   const { sb, role, can, profile } = useApp()
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(!overviewCache)
+  const [data, setData] = useState<any>(overviewCache)
   const [project, setProject] = useState('')
   const yearStart = `${new Date().getFullYear()}-01-01`
   const [from, setFrom] = useState(yearStart)
@@ -37,11 +39,13 @@ export default function Overview() {
       sb.from('tasks').select('id, due_date, status, project_id').neq('status', 'done').lt('due_date', today),
       sb.from('purchase_orders').select('project_id, amount, paid_amount, delivery_status'),
     ])
-    setData({
+    const next = {
       projects: projects.data || [], expenses: expenses.data || [], revisions: revisions.data || [], reports: reports.data || [],
       requests: requests.data || [], bills: bills.data || [], pendExp: pendExp.data || [], attendance: attendance.data || [],
       overdue: tasks.data || [], pos: pos.data || [],
-    })
+    }
+    overviewCache = next
+    setData(next)
     setLoading(false)
   }, [sb])
   useEffect(() => { load() }, [load])
@@ -106,12 +110,12 @@ export default function Overview() {
     <div>
       <PageHeader title={`Welcome back, ${(profile.full_name || '').split(' ')[0]}`} subtitle="Here's what's happening across your sites."
         actions={<>
-          <select value={project} onChange={e => setProject(e.target.value)} className={inputCls + ' w-auto'}>
+          <select value={project} onChange={e => setProject(e.target.value)} className={inputAuto + ' w-auto'}>
             <option value="">All Projects</option>
             {data.projects.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputCls + ' w-auto'} aria-label="From" />
-          <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputCls + ' w-auto'} aria-label="To" />
+          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className={inputAuto + ' w-auto'} aria-label="From" />
+          <input type="date" value={to} onChange={e => setTo(e.target.value)} className={inputAuto + ' w-auto'} aria-label="To" />
         </>} />
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -177,7 +181,7 @@ export default function Overview() {
             <div className="space-y-3">
               {data.reports.map((r: any) => (
                 <div key={r.id} className="flex items-center gap-3">
-                  <ProjectArt seed={r.project?.name || r.id} className="h-12 w-16 shrink-0 rounded-lg" />
+                  <ProjectArt photo seed={r.project?.name || r.id} className="h-12 w-16 shrink-0 rounded-lg" />
                   <div className="min-w-0 flex-1"><div className="truncate text-sm font-semibold text-slate-800">{r.project?.name}</div><div className="truncate text-xs text-slate-500">{r.work_completed || '—'}</div></div>
                   <div className="text-right"><div className="text-xs text-slate-500">{fmtDate(r.report_date)}</div><StatusBadge status={r.status} /></div>
                 </div>

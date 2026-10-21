@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import DataModule, { FieldDef } from '@/components/DataModule'
 import { useApp } from '@/components/AppProvider'
-import { Btn, Card, CardTitle, inputCls, PageHeader, Progress, Spinner, StatusBadge, Tabs } from '@/components/ui'
+import { inputAuto, Btn, Card, CardTitle, inputCls, PageHeader, Progress, Spinner, StatusBadge, Tabs } from '@/components/ui'
 import { crShort, fmtDate, inr, todayISO } from '@/lib/format'
 import { FINANCE } from '@/lib/permissions'
 import { EXPENSE_CATEGORIES, opt } from '@/lib/fields'
@@ -44,7 +44,7 @@ function BudgetSummary() {
     Budget: d.b.filter((x: any) => (!project || x.project_id === project) && x.category === c).reduce((s: number, x: any) => s + Number(x.amount), 0) }))
   return (
     <div className="space-y-4">
-      <select className={inputCls + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{d.p.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+      <select className={inputAuto + ' w-auto'} value={project} onChange={e => setProject(e.target.value)}><option value="">All projects</option>{d.p.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
       <Card className="overflow-x-auto"><table className="w-full min-w-[820px] text-sm"><thead><tr className="border-b bg-slate-50/70 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
         {['Project', 'Original budget', 'Revisions', 'Current budget', 'Actual (recorded)', 'Committed', 'Remaining', 'Used'].map(h => <th key={h} className="px-4 py-2.5">{h}</th>)}</tr></thead>
         <tbody>{rows.map((r: any) => (

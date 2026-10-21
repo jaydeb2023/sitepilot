@@ -4,7 +4,16 @@ const PALETTES = [
   ['#e5defa', '#f3efff', '#7c3aed'], ['#d4eef7', '#ecf8fc', '#0891b2'],
 ]
 
-export default function ProjectArt({ seed, className = '', crane = false }: { seed: string; className?: string; crane?: boolean }) {
+/** Photos live in public/images/projects/<slug>.jpg  (slug = project name, lowercase, hyphenated). Add more here as you upload them. */
+const PHOTOS = new Set(['lakeview-villas', 'metro-office-tower', 'sunshine-heights'])
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
+export default function ProjectArt({ seed, className = '', crane = false, photo = false }: { seed: string; className?: string; crane?: boolean; photo?: boolean }) {
+  const slug = slugify(seed)
+  if (photo && PHOTOS.has(slug)) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`/images/projects/${slug}.jpg`} alt="" loading="lazy" className={`${className} object-cover`} />
+  }
   let h = 0
   for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0
   const [sky, sky2, tone] = PALETTES[h % PALETTES.length]

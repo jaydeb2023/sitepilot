@@ -64,8 +64,9 @@ export default function Landing() {
         <Skyline />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/images/hero.jpg" alt="Site engineer checking project progress on a tablet at a construction site" width={844} height={704} fetchPriority="high"
-          className="absolute inset-y-0 right-0 h-full w-full object-cover object-[75%_center] opacity-40 lg:w-[60%] lg:opacity-100" />
-        <div className="absolute inset-0 bg-gradient-to-r from-navy-900 via-navy-900/80 to-navy-900/5 lg:via-navy-900/55" />
+          className="absolute inset-y-0 right-0 h-full w-full object-cover object-[78%_center] opacity-35 lg:w-[66%] lg:opacity-100"
+          style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 14%, rgba(0,0,0,.8) 34%, #000 55%)', maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,.35) 14%, rgba(0,0,0,.8) 34%, #000 55%)' }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy-900/70 via-navy-900/40 to-transparent lg:from-navy-900/85 lg:via-navy-900/20" />
         <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-navy-900/80 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-slate-200">

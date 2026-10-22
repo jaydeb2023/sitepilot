@@ -29,7 +29,7 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy-900 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-7 shadow-2xl">
-        <Link href="/"><Logo dark /></Link>
+        <Link href="/"><Logo dark full height={72} /></Link>
         {done ? (
           <div className="py-8 text-center">
             <h1 className="text-lg font-bold text-slate-900">Check your email</h1>

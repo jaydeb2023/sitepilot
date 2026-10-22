@@ -6,31 +6,23 @@ import { useApp } from '@/components/AppProvider'
 import { inputAuto, Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner } from '@/components/ui'
 import { crShort, daysBetween, fmtDate, inr, titleCase, todayISO } from '@/lib/format'
 import { downloadCSV } from '@/lib/csv'
+import { store } from '@/lib/store'
+import { defaultRange, fetchReports, reportsKey } from '@/lib/prefetch'
 
 type Rep = { columns: string[]; rows: (string | number)[][] }
 
 export default function Reports() {
   const { sb } = useApp()
-  const [d, setD] = useState<any>(null)
+  const [d, setD] = useState<any>(() => { const r = defaultRange(); return store.get(reportsKey(r.from, r.to)) ?? null })
   const [project, setProject] = useState('')
-  const [from, setFrom] = useState(() => { const x = new Date(); x.setMonth(x.getMonth() - 6); return x.toISOString().slice(0, 10) })
-  const [to, setTo] = useState(todayISO())
+  const [from, setFrom] = useState(() => defaultRange().from)
+  const [to, setTo] = useState(() => defaultRange().to)
   const [type, setType] = useState('progress')
 
   const load = useCallback(async () => {
-    const r = await Promise.all([
-      sb.from('projects').select('*'), sb.from('expenses').select('*').eq('kind', 'actual').eq('approval_status', 'approved'),
-      sb.from('attendance_records').select('*, worker:workers(name, category), project:projects(name)').gte('work_date', from).lte('work_date', to),
-      sb.from('stock_movements').select('*, material:materials(name, unit), project:projects(name)').gte('movement_date', from).lte('movement_date', to),
-      sb.from('stock_balances').select('*'), sb.from('materials').select('*'),
-      sb.from('purchase_orders').select('*, supplier:suppliers(name), project:projects(name)').gte('order_date', from).lte('order_date', to),
-      sb.from('contractor_bills').select('*, contractor:contractors(name), project:projects(name)').gte('bill_date', from).lte('bill_date', to),
-      sb.from('tasks').select('*, project:projects(name), assignee:profiles!assignee_id(full_name)').neq('status', 'done'),
-      sb.from('daily_site_reports').select('*, project:projects(name)').gte('report_date', from).lte('report_date', to),
-      sb.from('budget_revisions').select('*'),
-    ])
-    const k = ['projects', 'expenses', 'attendance', 'movements', 'balances', 'materials', 'pos', 'bills', 'tasks', 'reports', 'revisions']
-    setD(Object.fromEntries(k.map((key, i) => [key, r[i].data || []])))
+    const r = await fetchReports(sb, from, to)
+    store.set(reportsKey(from, to), r)
+    setD(r)
   }, [sb, from, to])
   useEffect(() => { load() }, [load])
 

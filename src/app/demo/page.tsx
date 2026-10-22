@@ -20,7 +20,7 @@ export default function DemoPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy-900 p-4">
       <div className="w-full max-w-lg rounded-2xl bg-white p-7 shadow-2xl">
-        <Link href="/"><Logo dark /></Link>
+        <Link href="/"><Logo dark full height={72} /></Link>
         {state === 'done' ? (
           <div className="py-10 text-center">
             <h1 className="text-xl font-bold text-slate-900">Thank you!</h1>

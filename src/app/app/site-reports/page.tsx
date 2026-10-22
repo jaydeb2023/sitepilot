@@ -9,12 +9,14 @@ import { useSignedUrls } from '@/components/useSignedUrls'
 import ProjectArt from '@/components/ProjectArt'
 import { fmtDate } from '@/lib/format'
 import { MANAGERS } from '@/lib/permissions'
+import { store } from '@/lib/store'
+import { SITE_REPORT_SELECT } from '@/lib/prefetch'
 
-const SELECT = '*, project:projects(name), creator:profiles!created_by(full_name), reviewer:profiles!reviewed_by(full_name)'
+const SELECT = SITE_REPORT_SELECT
 
 export default function SiteReports() {
   const { sb, can, user, role } = useApp()
-  const [rows, setRows] = useState<any[] | null>(null)
+  const [rows, setRows] = useState<any[] | null>(store.get('site-reports') ?? null)
   const [projects, setProjects] = useState<any[]>([])
   const [project, setProject] = useState('')
   const [status, setStatus] = useState('')
@@ -32,6 +34,7 @@ export default function SiteReports() {
     if (to) query = query.lte('report_date', to)
     const { data, error } = await query.order('report_date', { ascending: false }).limit(300)
     if (error) toast.error(error.message)
+    if (!project && !status && !from && !to) store.set('site-reports', data || [])
     setRows(data || [])
   }, [sb, project, status, from, to])
   useEffect(() => { load() }, [load])

@@ -7,13 +7,14 @@ import { inputAuto, Btn, Card, Empty, inputCls, Modal, PageHeader, Spinner, Labe
 import { fmtDate } from '@/lib/format'
 import { BUCKET, uploadFile } from '@/lib/upload'
 import { MANAGERS } from '@/lib/permissions'
+import { store } from '@/lib/store'
 import { opt } from '@/lib/fields'
 
 const CATS = opt('drawing', 'photo', 'daily_report', 'purchase_order', 'bill', 'contract', 'certificate', 'other')
 
 export default function Documents() {
   const { sb, companyId, can } = useApp()
-  const [rows, setRows] = useState<any[] | null>(null)
+  const [rows, setRows] = useState<any[] | null>(store.get('documents') ?? null)
   const [projects, setProjects] = useState<any[]>([])
   const [project, setProject] = useState('')
   const [cat, setCat] = useState('')
@@ -27,7 +28,9 @@ export default function Documents() {
     if (project) query = query.eq('project_id', project)
     if (cat) query = query.eq('category', cat)
     const { data, error } = await query.order('created_at', { ascending: false }).limit(300)
-    if (error) toast.error(error.message); setRows(data || [])
+    if (error) toast.error(error.message)
+    if (!project && !cat) store.set('documents', data || [])
+    setRows(data || [])
   }, [sb, project, cat])
   useEffect(() => { load() }, [load])
   useEffect(() => { sb.from('projects').select('id, name').order('name').then(({ data }: any) => setProjects(data || [])) }, [sb])

@@ -74,22 +74,25 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [drawer, setDrawer] = useState(false)
+  const [pending, setPending] = useState<string | null>(null)   // highlight the clicked item immediately
   const [q, setQ] = useState('')
   const nav = NAV.filter(n => n.roles.includes(role))
-  const isActive = (href: string) => (href === '/app' ? pathname === '/app' : pathname.startsWith(href))
-  useEffect(() => setDrawer(false), [pathname])
+  const current = pending ?? pathname
+  const isActive = (href: string) => (href === '/app' ? current === '/app' : current.startsWith(href))
+  useEffect(() => { setDrawer(false); setPending(null) }, [pathname])
+  useEffect(() => { nav.forEach(n => router.prefetch(n.href)) }, [role])   // eslint-disable-line react-hooks/exhaustive-deps
 
   const signOut = async () => { await sb.auth.signOut(); window.location.href = '/login' }
   const initials = (profile.full_name || 'U').split(' ').map((s: string) => s[0]).slice(0, 2).join('').toUpperCase()
 
   const SidebarBody = (
     <div className="flex h-full flex-col">
-      <div className="px-5 pb-4 pt-5"><Logo /></div>
+      <div className="px-4 pb-4 pt-5"><Logo height={38} /></div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
         {nav.map(n => {
           const Icon = ICONS[n.icon]
           return (
-            <Link key={n.href} href={n.href}
+            <Link key={n.href} href={n.href} onClick={() => setPending(n.href)}
               className={cn('flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
                 isActive(n.href) ? 'bg-brand-600 text-white shadow' : 'text-slate-300 hover:bg-white/5 hover:text-white')}>
               <Icon size={18} /> {n.label}

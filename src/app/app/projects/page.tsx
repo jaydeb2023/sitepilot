@@ -10,12 +10,11 @@ import ProjectArt from '@/components/ProjectArt'
 import { projectFields, opt, PROJECT_TYPES } from '@/lib/fields'
 import { fmtDate, inr } from '@/lib/format'
 import { MANAGERS } from '@/lib/permissions'
-
-let projectsCache: any[] | null = null
+import { store } from '@/lib/store'
 
 export default function ProjectsPage() {
   const { sb, can } = useApp()
-  const [rows, setRows] = useState<any[] | null>(projectsCache)
+  const [rows, setRows] = useState<any[] | null>(store.get('projects') ?? null)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [type, setType] = useState('')
@@ -24,7 +23,7 @@ export default function ProjectsPage() {
   const load = useCallback(async () => {
     const { data, error } = await sb.from('projects').select('*').order('created_at', { ascending: false })
     if (error) toast.error(error.message)
-    projectsCache = data || []
+    store.set('projects', data || [])
     setRows(data || [])
   }, [sb])
   useEffect(() => { load(); setQ(new URLSearchParams(window.location.search).get('q') || '') }, [load])

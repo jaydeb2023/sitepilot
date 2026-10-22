@@ -9,16 +9,16 @@ import { inputAuto, Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner, 
 import ProjectArt from '@/components/ProjectArt'
 import { crShort, daysBetween, fmtDate, inr, todayISO } from '@/lib/format'
 import { FINANCE, MANAGERS } from '@/lib/permissions'
+import { store } from '@/lib/store'
+import { fetchOverview } from '@/lib/prefetch'
 
 const STATUS_COLORS: Record<string, string> = { on_track: '#2250e8', delayed: '#ef4444', at_risk: '#f59e0b', completed: '#22c55e', planning: '#94a3b8' }
 const STATUS_LABEL: Record<string, string> = { on_track: 'On Track', delayed: 'Delayed', at_risk: 'At Risk', completed: 'Completed', planning: 'Planning' }
 
-let overviewCache: any = null
-
 export default function Overview() {
   const { sb, role, can, profile } = useApp()
-  const [loading, setLoading] = useState(!overviewCache)
-  const [data, setData] = useState<any>(overviewCache)
+  const [loading, setLoading] = useState(!store.has('overview'))
+  const [data, setData] = useState<any>(store.get('overview') ?? null)
   const [project, setProject] = useState('')
   const yearStart = `${new Date().getFullYear()}-01-01`
   const [from, setFrom] = useState(yearStart)
@@ -26,25 +26,8 @@ export default function Overview() {
   const [tab, setTab] = useState<'requests' | 'bills' | 'expenses'>('requests')
 
   const load = useCallback(async () => {
-    const today = todayISO()
-    const [projects, expenses, revisions, reports, requests, bills, pendExp, attendance, tasks, pos] = await Promise.all([
-      sb.from('projects').select('*').order('created_at'),
-      sb.from('expenses').select('project_id, amount, expense_date').eq('kind', 'actual').eq('approval_status', 'approved'),
-      sb.from('budget_revisions').select('project_id, change_amount'),
-      sb.from('daily_site_reports').select('id, report_date, work_completed, status, project:projects(name)').order('report_date', { ascending: false }).limit(4),
-      sb.from('material_requests').select('id, quantity, project_id, material:materials(name, unit), project:projects(name)').eq('status', 'pending').order('created_at', { ascending: false }).limit(20),
-      sb.from('contractor_bills').select('id, bill_no, net_amount, project_id, contractor:contractors(name), project:projects(name)').eq('status', 'pending').limit(20),
-      sb.from('expenses').select('id, amount, description, category, project_id, project:projects(name)').eq('approval_status', 'pending').limit(20),
-      sb.from('attendance_records').select('id, status').eq('work_date', today),
-      sb.from('tasks').select('id, due_date, status, project_id').neq('status', 'done').lt('due_date', today),
-      sb.from('purchase_orders').select('project_id, amount, paid_amount, delivery_status'),
-    ])
-    const next = {
-      projects: projects.data || [], expenses: expenses.data || [], revisions: revisions.data || [], reports: reports.data || [],
-      requests: requests.data || [], bills: bills.data || [], pendExp: pendExp.data || [], attendance: attendance.data || [],
-      overdue: tasks.data || [], pos: pos.data || [],
-    }
-    overviewCache = next
+    const next = await fetchOverview(sb)
+    store.set('overview', next)
     setData(next)
     setLoading(false)
   }, [sb])

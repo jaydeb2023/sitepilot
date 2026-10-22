@@ -24,7 +24,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-navy-900 p-4">
       <form onSubmit={submit} className="w-full max-w-sm rounded-2xl bg-white p-7 shadow-2xl">
-        <Link href="/"><Logo dark /></Link>
+        <Link href="/"><Logo dark full height={72} /></Link>
         <h1 className="mt-6 text-xl font-bold text-slate-900">Welcome back</h1>
         <p className="mb-5 text-sm text-slate-500">Sign in to your SitePilot workspace.</p>
         <div className="space-y-3">

@@ -7,6 +7,8 @@ import { useApp } from '@/components/AppProvider'
 import { inputAuto, Btn, Card, CardTitle, inputCls, PageHeader, Progress, Spinner, StatusBadge, Tabs } from '@/components/ui'
 import { crShort, fmtDate, inr, todayISO } from '@/lib/format'
 import { FINANCE } from '@/lib/permissions'
+import { store } from '@/lib/store'
+import { fetchBudget } from '@/lib/prefetch'
 import { EXPENSE_CATEGORIES, opt } from '@/lib/fields'
 
 const cats = EXPENSE_CATEGORIES.map(c => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))
@@ -20,14 +22,12 @@ const expFields: FieldDef[] = [
 
 function BudgetSummary() {
   const { sb } = useApp()
-  const [d, setD] = useState<any>(null)
+  const [d, setD] = useState<any>(store.get('budget') ?? null)
   const [project, setProject] = useState('')
   const load = useCallback(async () => {
-    const [p, e, r, o, b] = await Promise.all([
-      sb.from('projects').select('id, name, approved_budget'), sb.from('expenses').select('project_id, category, amount, kind, approval_status'),
-      sb.from('budget_revisions').select('project_id, change_amount'), sb.from('purchase_orders').select('project_id, amount, paid_amount, delivery_status'), sb.from('budgets').select('project_id, category, amount'),
-    ])
-    setD({ p: p.data || [], e: e.data || [], r: r.data || [], o: o.data || [], b: b.data || [] })
+    const r = await fetchBudget(sb)
+    store.set('budget', r)
+    setD(r)
   }, [sb])
   useEffect(() => { load() }, [load])
   if (!d) return <Spinner />

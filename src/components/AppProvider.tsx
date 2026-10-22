@@ -3,6 +3,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 import { createClient } from '@/lib/supabase/client'
 import type { Role } from '@/lib/permissions'
 import { Btn, Spinner } from './ui'
+import { prefetchAll } from '@/lib/prefetch'
 
 type Ctx = {
   sb: any
@@ -43,6 +44,13 @@ export default function AppProvider({ children }: { children: ReactNode }) {
   }, [sb])
 
   useEffect(() => { load() }, [load])
+
+  // Warm the cache for every page this user can open, so later clicks render instantly
+  useEffect(() => {
+    if (!sb || !state) return
+    const t = setTimeout(() => { prefetchAll(sb, state.profile.role) }, 150)
+    return () => clearTimeout(t)
+  }, [sb, state])
 
   if (error) {
     return (

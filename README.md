@@ -108,7 +108,12 @@ public/images/         hero.jpg, devices.jpg, projects/<project-name>.jpg
 Drop higher-resolution files with the **same names** into `public/images/` (hero ≈ 1600×1100, devices ≈ 1400×900).
 Project photos go in `public/images/projects/<slug>.jpg` (slug = project name, lowercase, hyphens) and the slug must be added to `PHOTOS` in `src/components/ProjectArt.tsx`.
 
+### Logo
+`public/images/logo-*.png` (compact / full / mark, each with a `-dark` white-text version for the navy UI) and the favicon `src/app/icon.png`. Used through `src/components/Logo.tsx`.
+
 ### Performance notes
+Right after login the app preloads data for every page the user's role can open (`src/lib/prefetch.ts`) into an in-memory cache (`src/lib/store.ts`); pages render from it instantly and refresh in the background.
+If you add a list page, add its table/select/order to `LIST_MODULES` in `prefetch.ts` (they must match the page).
 All `/app/*` module pages are statically prebuilt and prefetched; middleware only checks for a session cookie (no network call).
 Keep your Supabase project in a region close to users (Mumbai `ap-south-1` for India); `vercel.json` pins API routes to `bom1`.
 

@@ -1,25 +1,20 @@
-export function LogoMark({ size = 32 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden>
-      <defs>
-        <linearGradient id="spg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#3b82f6" /><stop offset="1" stopColor="#1d4ed8" />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="2" width="36" height="36" rx="9" fill="url(#spg)" />
-      <path d="M10 29V17l5-3v15M17 29V12l5-3v20M24 29V15l6 3v11" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  )
+/* eslint-disable @next/next/no-img-element */
+// Logo files live in public/images/: logo-compact(-dark).png, logo-full(-dark).png, logo-mark(-dark).png
+// "dark" = the logo is shown on a LIGHT background (dark text). Default = shown on the dark navy UI (white text).
+
+export function LogoMark({ size = 32, onLight = false }: { size?: number; onLight?: boolean }) {
+  return <img src={onLight ? '/images/logo-mark.png' : '/images/logo-mark-dark.png'} alt="SitePilot" height={size} width={Math.round(size * 1.04)} style={{ height: size, width: 'auto' }} />
 }
 
-export function Logo({ dark = false, sub = true }: { dark?: boolean; sub?: boolean }) {
+export function Logo({ dark = false, full = false, height = 40 }: { dark?: boolean; sub?: boolean; full?: boolean; height?: number }) {
+  const variant = full ? 'logo-full' : 'logo-compact'
+  const ratio = full ? 1200 / 340 : 1000 / 282
   return (
-    <div className="flex items-center gap-2.5">
-      <LogoMark />
-      <div className="leading-none">
-        <div className={`text-[17px] font-bold tracking-tight ${dark ? 'text-slate-900' : 'text-white'}`}>SitePilot</div>
-        {sub && <div className={`mt-0.5 text-[10px] ${dark ? 'text-slate-400' : 'text-slate-400'}`}>by Evynta</div>}
-      </div>
-    </div>
+    <img
+      src={`/images/${variant}${dark ? '' : '-dark'}.png`}
+      alt="SitePilot by Evynta — Construction & Site Management"
+      height={height} width={Math.round(height * ratio)}
+      style={{ height, width: 'auto' }}
+    />
   )
 }

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { useApp } from './AppProvider'
 import { inputAuto, Btn, Card, Empty, inputCls, Label, Modal, Spinner } from './ui'
 import { downloadCSV } from '@/lib/csv'
+import { store, rowKey } from '@/lib/store'
 import { MANAGERS, Role } from '@/lib/permissions'
 
 export type Opt = { value: string; label: string }
@@ -148,8 +149,8 @@ type Props = {
 }
 
 const PER_PAGE = 15
-const rowCache = new Map<string, any[]>()   // stale-while-revalidate across page visits
-const cacheKey = (t: string, s: string | undefined, ...f: string[]) => [t, s || '*', ...f].join('|')
+const rowCache = { get: (k: string) => store.get(k) as any[] | undefined, set: (k: string, v: any[]) => store.set(k, v), has: (k: string) => store.has(k) }
+const cacheKey = rowKey
 
 export default function DataModule(p: Props) {
   const { sb, role, companyId } = useApp()

@@ -7,6 +7,8 @@ import { useApp } from '@/components/AppProvider'
 import { inputAuto, Badge, Btn, Card, Empty, inputCls, PageHeader, Spinner, StatusBadge, Tabs } from '@/components/ui'
 import { fmtDate, todayISO } from '@/lib/format'
 import { MANAGERS } from '@/lib/permissions'
+import { store } from '@/lib/store'
+import { fetchStock } from '@/lib/prefetch'
 import { opt, UNITS } from '@/lib/fields'
 
 const proj = { table: 'projects', label: 'name' }
@@ -14,13 +16,13 @@ const mat = { table: 'materials', label: 'name' }
 
 function StockBalance() {
   const { sb } = useApp()
-  const [rows, setRows] = useState<any[] | null>(null)
+  const [rows, setRows] = useState<any[] | null>(store.get('stock') ?? null)
   const [project, setProject] = useState('')
   const [q, setQ] = useState('')
   const load = useCallback(async () => {
-    const [b, m, p] = await Promise.all([sb.from('stock_balances').select('*'), sb.from('materials').select('id, name, unit, min_stock, category'), sb.from('projects').select('id, name')])
-    const mm = Object.fromEntries((m.data || []).map((x: any) => [x.id, x])); const pp = Object.fromEntries((p.data || []).map((x: any) => [x.id, x.name]))
-    setRows((b.data || []).map((r: any) => ({ ...r, material: mm[r.material_id], site: pp[r.project_id], balance: Number(r.balance) })).filter((r: any) => r.material))
+    const r = await fetchStock(sb)
+    store.set('stock', r)
+    setRows(r)
   }, [sb])
   useEffect(() => { load() }, [load])
   const projects = useMemo(() => Array.from(new Set((rows || []).map(r => r.project_id))).map(id => ({ id, name: rows!.find(r => r.project_id === id).site })), [rows])

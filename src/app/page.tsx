@@ -4,6 +4,7 @@ import {
   Hammer, Sparkles, Users, Wallet, TrendingUp, Clock, ShieldCheck, Smartphone, ChevronDown,
 } from 'lucide-react'
 import { Logo, LogoMark } from '@/components/Logo'
+import Pricing from '@/components/Pricing'
 
 function Skyline() {
   return (
@@ -31,12 +32,6 @@ const FEATURES = [
   { Icon: Wallet, t: 'Expense & Budget', d: 'Monitor costs and budget utilisation.', c: 'bg-fuchsia-50 text-fuchsia-600' },
   { Icon: Sparkles, t: 'AI Site Assistant', d: 'Ask questions about your sites in plain language.', c: 'bg-cyan-50 text-cyan-600' },
   { Icon: BarChart3, t: 'Reports & Analytics', d: 'Detailed reports for better decisions.', c: 'bg-emerald-50 text-emerald-600' },
-]
-
-const PLANS = [
-  { n: 'Starter', p: '₹4,999', d: 'For small contractors starting to digitise sites.', f: ['Up to 10 projects', '10 users', 'Daily reports with photos', 'Labour & materials', 'Basic reports'] },
-  { n: 'Growth', p: '₹9,999', d: 'For builders running several sites at once.', f: ['Up to 30 projects', '40 users', 'Contractor bills & approvals', 'Budget & variance tracking', 'AI Site Assistant', 'Priority support'], hot: true },
-  { n: 'Business', p: '₹19,999+', d: 'For larger companies needing customisation.', f: ['Unlimited projects', 'Unlimited users', 'Custom workflows & reports', 'Dedicated onboarding', 'Integrations on request'] },
 ]
 
 export default function Landing() {
@@ -163,18 +158,12 @@ export default function Landing() {
       {/* Pricing */}
       <section id="pricing" className="bg-slate-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="text-center"><h2 className="text-3xl font-extrabold text-slate-900">Simple monthly pricing</h2><p className="mt-2 text-slate-500">Plus one-time onboarding & customisation from ₹30,000 depending on scope.</p></div>
-          <div className="mt-10 grid gap-5 lg:grid-cols-3">
-            {PLANS.map(p => (
-              <div key={p.n} className={`rounded-2xl bg-white p-6 shadow-card ${p.hot ? 'ring-2 ring-brand-600' : 'border border-slate-100'}`}>
-                {p.hot && <span className="mb-2 inline-block rounded-full bg-brand-600 px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">Most popular</span>}
-                <h3 className="text-lg font-bold">{p.n}</h3><p className="mt-1 text-sm text-slate-500">{p.d}</p>
-                <div className="mt-4"><span className="text-3xl font-extrabold">{p.p}</span><span className="text-sm text-slate-500">/month</span></div>
-                <ul className="mt-5 space-y-2 text-sm text-slate-600">{p.f.map(x => <li key={x} className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-emerald-500" />{x}</li>)}</ul>
-                <Link href="/demo" className={`mt-6 block rounded-lg py-2.5 text-center text-sm font-semibold ${p.hot ? 'bg-brand-600 text-white hover:bg-brand-700' : 'border border-slate-200 hover:bg-slate-50'}`}>Get a Free Demo</Link>
-              </div>
-            ))}
+          <div className="mb-10 text-center">
+            <span className="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-700">Simple pricing</span>
+            <h2 className="mt-3 text-3xl font-extrabold text-slate-900">Pick the plan that fits your sites</h2>
+            <p className="mx-auto mt-2 max-w-2xl text-slate-500">Start with a 14-day free trial of any plan. Upgrade, downgrade or talk to us whenever your business grows.</p>
           </div>
+          <Pricing mode="public" />
         </div>
       </section>
 

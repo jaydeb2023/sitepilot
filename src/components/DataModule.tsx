@@ -153,7 +153,7 @@ const rowCache = { get: (k: string) => store.get(k) as any[] | undefined, set: (
 const cacheKey = rowKey
 
 export default function DataModule(p: Props) {
-  const { sb, role, companyId } = useApp()
+  const { sb, role, companyId, allows } = useApp()
   const [rows, setRows] = useState<any[]>(() => rowCache.get(cacheKey(p.table, p.select, '', '', '', '')) || [])
   const [loading, setLoading] = useState(() => !rowCache.has(cacheKey(p.table, p.select, '', '', '', '')))
   const [q, setQ] = useState('')
@@ -258,7 +258,7 @@ export default function DataModule(p: Props) {
         )}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {p.toolbar?.(reloadAll)}
-          <Btn variant="secondary" onClick={exportCsv} disabled={!filtered.length}><Download size={14} /> Export</Btn>
+          <Btn variant="secondary" onClick={exportCsv} disabled={!filtered.length || !allows('csv_export')} title={allows('csv_export') ? undefined : 'CSV export is available on the Growth plan and above'}><Download size={14} /> Export</Btn>
           {canAdd && <Btn onClick={() => setModal({ row: null })}><Plus size={15} /> {p.addLabel || 'Add'}</Btn>}
         </div>
       </div>

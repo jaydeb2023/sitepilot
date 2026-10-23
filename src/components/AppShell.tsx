@@ -4,12 +4,16 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Building2, ClipboardList, ListChecks, HardHat, Package, ShoppingCart, Users, Wallet,
-  FolderOpen, BarChart3, Sparkles, Settings, Bell, Search, Menu, X, LogOut, Home,
+  FolderOpen, BarChart3, Sparkles, Settings, Bell, Search, Menu, X, LogOut, Home, Lock,
 } from 'lucide-react'
 import { Logo } from './Logo'
 import { useApp } from './AppProvider'
 import { NAV, ROLE_LABEL } from '@/lib/permissions'
 import { cn } from './ui'
+import UpgradeNotice from './UpgradeNotice'
+import { FormModal } from './DataModule'
+import toast from 'react-hot-toast'
+import { PLAN_NAME, ROUTE_FEATURE } from '@/lib/plans'
 
 const ICONS: Record<string, any> = { LayoutDashboard, Building2, ClipboardList, ListChecks, HardHat, Package, ShoppingCart, Users, Wallet, FolderOpen, BarChart3, Sparkles, Settings }
 
@@ -70,13 +74,19 @@ function Notifications() {
 }
 
 export default function AppShell({ children }: { children: ReactNode }) {
-  const { sb, profile, company, role } = useApp()
+  const { sb, profile, company, role, plan, allows, subActive, daysLeft, subscription, refresh } = useApp()
   const pathname = usePathname()
   const router = useRouter()
   const [drawer, setDrawer] = useState(false)
   const [pending, setPending] = useState<string | null>(null)   // highlight the clicked item immediately
   const [q, setQ] = useState('')
   const nav = NAV.filter(n => n.roles.includes(role))
+  const lockedFeature = (href: string) => { const f = ROUTE_FEATURE[href]; return f && !allows(f) ? f : null }
+  const gateEntry = Object.entries(ROUTE_FEATURE).find(([r]) => pathname === r || pathname.startsWith(r + '/'))
+  const gated = gateEntry && !allows(gateEntry[1]) ? gateEntry[1] : null
+  // Google sign-ups get a placeholder company name — ask the owner for the real one (once per session)
+  const [askName, setAskName] = useState(false)
+  useEffect(() => { if (role === 'owner' && /'s company$/.test(company.name) && !sessionStorage.getItem('sp_skip_name')) setAskName(true) }, [role, company.name])
   const current = pending ?? pathname
   const isActive = (href: string) => (href === '/app' ? current === '/app' : current.startsWith(href))
   useEffect(() => { setDrawer(false); setPending(null) }, [pathname])
@@ -96,6 +106,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               className={cn('flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
                 isActive(n.href) ? 'bg-brand-600 text-white shadow' : 'text-slate-300 hover:bg-white/5 hover:text-white')}>
               <Icon size={18} /> {n.label}
+              {lockedFeature(n.href) && <Lock size={13} className="ml-auto text-amber-400" aria-label="Upgrade required" />}
             </Link>
           )
         })}
@@ -149,7 +160,29 @@ export default function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto max-w-[1400px] p-4 pb-24 sm:p-6 lg:pb-8">{children}</main>
+        {!subActive ? (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-red-600 px-4 py-2 text-center text-sm font-medium text-white">
+            Your {subscription?.status === 'trialing' ? 'free trial' : 'subscription'} has ended. Your data is safe and you can still view it, but changes are disabled.
+            <Link href="/app/settings?tab=plan" className="rounded-md bg-white px-2.5 py-0.5 text-xs font-bold text-red-600">Choose a plan</Link>
+          </div>
+        ) : subscription?.status === 'trialing' ? (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-brand-600 px-4 py-1.5 text-center text-xs font-medium text-white">
+            Free trial of the {PLAN_NAME[plan]} plan · {daysLeft} day{daysLeft === 1 ? '' : 's'} left
+            <Link href="/app/settings?tab=plan" className="rounded-md bg-white/20 px-2 py-0.5 font-bold hover:bg-white/30">See plans</Link>
+          </div>
+        ) : subscription?.status === 'active' && daysLeft !== null && daysLeft <= 7 ? (
+          <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-semibold text-white">Your {PLAN_NAME[plan]} plan period ends in {daysLeft} day{daysLeft === 1 ? '' : 's'}. Contact Evynta to renew.</div>
+        ) : null}
+        <main className="mx-auto max-w-[1400px] p-4 pb-24 sm:p-6 lg:pb-8">{gated ? <UpgradeNotice feature={gated} /> : children}</main>
+        {askName && (
+          <FormModal title="Name your company" submitLabel="Save" initial={{ name: '' }} onClose={() => { sessionStorage.setItem('sp_skip_name', '1'); setAskName(false) }}
+            fields={[{ name: 'name', label: 'Company name (shown to your team)', required: true }]}
+            onSubmit={async v => {
+              const { error } = await sb.from('companies').update({ name: v.name }).eq('id', company.id)
+              if (error) { toast.error(error.message); return false }
+              toast.success('Saved'); refresh()
+            }} />
+        )}
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">

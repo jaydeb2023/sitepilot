@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import DataModule, { FieldDef } from '@/components/DataModule'
 import { useApp } from '@/components/AppProvider'
+import UpgradeNotice from '@/components/UpgradeNotice'
 import { inputAuto, Btn, Card, CardTitle, inputCls, PageHeader, Progress, Spinner, StatusBadge, Tabs } from '@/components/ui'
 import { crShort, fmtDate, inr, todayISO } from '@/lib/format'
 import { FINANCE } from '@/lib/permissions'
@@ -60,13 +61,15 @@ function BudgetSummary() {
 }
 
 export default function Expenses() {
-  const { sb, can } = useApp()
+  const { sb, can, allows } = useApp()
   const [tab, setTab] = useState<'expenses' | 'budget' | 'categories' | 'revisions'>('expenses')
+  const budgetsLocked = !allows('budgets')
   const decide = async (id: string, s: string, rl: () => void) => { const { error } = await sb.from('expenses').update({ approval_status: s }).eq('id', id); if (error) toast.error(error.message); else rl() }
   return (
     <div>
       <PageHeader title="Expenses & Budgets" subtitle="Estimates, committed costs and actual payments are kept separate" />
-      <Tabs value={tab} onChange={setTab} tabs={[{ id: 'expenses', label: 'Expenses' }, { id: 'budget', label: 'Budget vs Actual' }, { id: 'categories', label: 'Category Budgets' }, { id: 'revisions', label: 'Budget Revisions' }]} />
+      <Tabs value={tab} onChange={setTab} tabs={[{ id: 'expenses', label: 'Expenses' }, { id: 'budget', label: (budgetsLocked ? '🔒 ' : '') + 'Budget vs Actual' }, { id: 'categories', label: (budgetsLocked ? '🔒 ' : '') + 'Category Budgets' }, { id: 'revisions', label: (budgetsLocked ? '🔒 ' : '') + 'Budget Revisions' }]} />
+      {tab !== 'expenses' && budgetsLocked && <UpgradeNotice feature="budgets" inline />}
       {tab === 'expenses' && (
         <DataModule table="expenses" addLabel="Add Expense" fields={expFields} writeRoles={['owner', 'manager', 'accountant', 'storekeeper', 'engineer']} editRoles={FINANCE} select="*, project:projects(name)"
           projectFilter dateFilter="expense_date" order={{ column: 'expense_date', ascending: false }} statusFilter={{ column: 'approval_status', options: opt('pending', 'approved', 'rejected'), label: 'All approvals' }}
@@ -76,12 +79,12 @@ export default function Expenses() {
             { label: 'Type', render: r => <StatusBadge status={r.kind} />, csv: r => r.kind }, { label: 'Amount', align: 'right', render: r => <b>{inr(r.amount, { compact: false })}</b>, csv: r => r.amount },
             { label: 'Approval', render: r => <StatusBadge status={r.approval_status} />, csv: r => r.approval_status }]}
           rowActions={(r, rl) => r.approval_status === 'pending' && can(FINANCE) && <><Btn size="sm" variant="success" onClick={() => decide(r.id, 'approved', rl)}>Approve</Btn><Btn size="sm" variant="danger" onClick={() => decide(r.id, 'rejected', rl)}>Reject</Btn></>} />)}
-      {tab === 'budget' && <BudgetSummary />}
-      {tab === 'categories' && (
+      {tab === 'budget' && !budgetsLocked && <BudgetSummary />}
+      {tab === 'categories' && !budgetsLocked && (
         <DataModule table="budgets" addLabel="Set Category Budget" writeRoles={FINANCE} select="*, project:projects(name)" projectFilter order={{ column: 'created_at', ascending: false }}
           fields={[{ name: 'project_id', label: 'Project', type: 'select', required: true, from: { table: 'projects', label: 'name' } }, { name: 'category', label: 'Category', type: 'select', options: cats, required: true }, { name: 'amount', label: 'Budget (₹)', type: 'number', required: true, min: 0 }]}
           columns={[{ label: 'Project', render: r => r.project?.name, csv: r => r.project?.name }, { label: 'Category', key: 'category', render: r => <span className="capitalize">{r.category}</span> }, { label: 'Budget', align: 'right', render: r => inr(r.amount, { compact: false }), csv: r => r.amount }]} />)}
-      {tab === 'revisions' && (
+      {tab === 'revisions' && !budgetsLocked && (
         <DataModule table="budget_revisions" addLabel="Add Revision" writeRoles={['owner', 'manager']} noEdit select="*, project:projects(name)" projectFilter
           emptyHint="Record approved changes to a project budget here. Use a negative amount to reduce the budget."
           fields={[{ name: 'project_id', label: 'Project', type: 'select', required: true, from: { table: 'projects', label: 'name' } }, { name: 'change_amount', label: 'Change (₹, + or −)', type: 'number', required: true }, { name: 'reason', label: 'Reason', type: 'textarea', required: true }]}

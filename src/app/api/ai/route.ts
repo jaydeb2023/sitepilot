@@ -18,6 +18,9 @@ export async function POST(req: Request) {
   const { data: { user } } = await sb.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { data: allowed } = await sb.rpc('has_feature', { f: 'ai_assistant' })
+  if (!allowed) return NextResponse.json({ error: 'The AI Site Assistant is available on the Growth plan and above (and while your subscription is active).' }, { status: 403 })
+
   const { messages } = await req.json().catch(() => ({ messages: [] }))
   const history = (Array.isArray(messages) ? messages : []).slice(-8).filter((m: any) => m && typeof m.content === 'string' && ['user', 'assistant'].includes(m.role)).map((m: any) => ({ role: m.role, content: m.content.slice(0, 2000) }))
   const last = [...history].reverse().find((m: any) => m.role === 'user')

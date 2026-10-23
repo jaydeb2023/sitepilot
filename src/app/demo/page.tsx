@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/Logo'
@@ -10,6 +10,7 @@ export default function DemoPage() {
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
   const [err, setErr] = useState('')
   const set = (k: string, v: string) => setF(s => ({ ...s, [k]: v }))
+  useEffect(() => { const q = new URLSearchParams(window.location.search).get('plan'); if (q) setF(s => ({ ...s, message: s.message || `I am interested in the ${q.charAt(0).toUpperCase() + q.slice(1)} plan.` })) }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setState('busy'); setErr('')

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/Logo'
 import { Btn, inputCls, Label } from '@/components/ui'
+import GoogleButton from '@/components/GoogleButton'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -27,6 +28,8 @@ export default function LoginPage() {
         <Link href="/"><Logo dark full height={72} /></Link>
         <h1 className="mt-6 text-xl font-bold text-slate-900">Welcome back</h1>
         <p className="mb-5 text-sm text-slate-500">Sign in to your SitePilot workspace.</p>
+        <GoogleButton />
+        <div className="my-4 flex items-center gap-3 text-xs text-slate-400"><span className="h-px flex-1 bg-slate-200" />or sign in with email<span className="h-px flex-1 bg-slate-200" /></div>
         <div className="space-y-3">
           <div><Label>Email</Label><input className={inputCls} type="email" required value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" /></div>
           <div><Label>Password</Label><input className={inputCls} type="password" required value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" /></div>

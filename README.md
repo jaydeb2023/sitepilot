@@ -18,11 +18,22 @@ Documents (private storage) · Reports (12 reports, CSV, print) · AI Site Assis
    2. `20260101000002_security_automation.sql` – RLS, role guards, triggers, RPCs, signup trigger
    3. `20260101000003_demo_seed.sql` – "Load sample data" function
    4. `20260101000004_storage.sql` – private `project-files` bucket + policies
+   5. `20260101000005_plans_and_billing.sql` – plans, feature access, read-only mode, upgrade requests (**run this after 1–4; safe on an existing database**)
 3. **Authentication → Providers → Email**: enable, and keep **Confirm email ON** (invitations rely on it).
 4. **Authentication → URL Configuration**
    - Site URL: `https://sitepilot.evynta.in`
    - Redirect URLs: `https://sitepilot.evynta.in/auth/callback` and `http://localhost:3000/auth/callback`
 5. **Project Settings → API**: copy the Project URL, `anon` key and `service_role` key.
+
+### Google sign-in (optional but recommended)
+1. **Google Cloud Console** → APIs & Services → **OAuth consent screen**: User type *External*, app name `SitePilot`, support email, authorised domain `evynta.in`. Click **Publish app** (otherwise only test users can sign in).
+2. **Credentials → Create credentials → OAuth client ID → Web application**
+   - Authorised JavaScript origins: `https://sitepilot.evynta.in` and `http://localhost:3000`
+   - Authorised redirect URI: `https://<your-project-ref>.supabase.co/auth/v1/callback` (Supabase shows the exact URL on the Google provider page)
+3. Copy the **Client ID** and **Client secret**.
+4. **Supabase → Authentication → Providers → Google**: enable, paste both values, save.
+5. **Authentication → URL Configuration**: Site URL `https://sitepilot.evynta.in`; Redirect URLs include `https://sitepilot.evynta.in/auth/callback` and `http://localhost:3000/auth/callback`.
+No extra environment variables are needed. New Google users get a workspace automatically, are asked to name their company, and keep the plan they picked on the pricing section.
 
 ## 2. Run locally
 
@@ -90,10 +101,39 @@ PO/bill payments automatically create actual expenses; full `audit_logs` on all 
 In-app (bell icon): new site report, new material request, low stock, bill awaiting approval, budget 90% / 100%.
 Email/WhatsApp notifications are not included yet (see roadmap).
 
-## Plans
-`subscriptions` row per company (Starter: 10 projects / 10 users by default). Limits are enforced for projects (DB trigger) and users (invite API).
-Prices on the landing page (₹4,999 / ₹9,999 / ₹19,999+) are **proposed test prices from the BRD** — edit them in `src/app/page.tsx`.
-There is no payment gateway yet: set `subscriptions.plan/status/limits` manually in Supabase for pilot customers.
+## Plans and access
+Three plans (`src/lib/plans.ts`, mirrored in SQL migration 5). Every new workspace gets a **14-day free trial of the plan chosen on the pricing section** (Growth if none). Access is enforced **in the database**, not just hidden in the UI.
+
+| | Starter ₹4,999 | Growth ₹9,999 | Business ₹19,999+ |
+|---|---|---|---|
+| Projects / team members | 5 / 5 | 25 / 25 | Unlimited |
+| Site reports, tasks, labour, materials & stock, purchases, expenses, documents | ✓ | ✓ | ✓ |
+| Reports | 6 core | all 12 | all 12 |
+| CSV export | – | ✓ | ✓ |
+| Contractor bills & approvals | – | ✓ | ✓ |
+| Budgets, revisions, variance | – | ✓ | ✓ |
+| AI Site Assistant | – | ✓ | ✓ |
+| Audit log | – | – | ✓ |
+| Support | Email | Priority WhatsApp | Dedicated contact + onboarding |
+
+When a trial or paid period ends the workspace becomes **read-only** (data stays visible, changes are blocked) until a plan is activated.
+
+### How you (Evynta) activate a customer — Supabase SQL Editor
+There is no payment gateway yet. Customers press **Request plan** in *Settings → Plan & Billing*; you collect payment (UPI/bank/invoice) and then activate:
+```sql
+-- 1. See new requests
+select r.created_at, c.name as company, r.requested_plan, r.phone, r.message, r.company_id, r.status
+from plan_requests r join companies c on c.id = r.company_id order by r.created_at desc;
+
+-- 2. Activate after payment (one month shown; change the interval)
+select set_company_plan('<company_id>', 'growth', 'active', now() + interval '1 month');
+
+-- 3. Renew: run the same command again with a later date.  Suspend: use status 'canceled'.
+
+-- 4. Keep YOUR OWN workspace on the top plan
+select set_company_plan(id, 'business', 'active', now() + interval '10 years') from companies where name = 'Evynta';
+```
+Prices are the BRD's proposed test prices — edit them in `src/lib/plans.ts` (and the limits in migration 5 if you change them). Support levels (email / WhatsApp / dedicated contact) are service promises: only keep what you can deliver.
 
 ## Project structure
 ```

@@ -6,13 +6,14 @@ import { useApp } from '@/components/AppProvider'
 import { inputAuto, Btn, Card, CardTitle, Empty, inputCls, PageHeader, Spinner } from '@/components/ui'
 import { crShort, daysBetween, fmtDate, inr, titleCase, todayISO } from '@/lib/format'
 import { downloadCSV } from '@/lib/csv'
+import { BASIC_REPORTS } from '@/lib/plans'
 import { store } from '@/lib/store'
 import { defaultRange, fetchReports, reportsKey } from '@/lib/prefetch'
 
 type Rep = { columns: string[]; rows: (string | number)[][] }
 
 export default function Reports() {
-  const { sb } = useApp()
+  const { sb, allows } = useApp()
   const [d, setD] = useState<any>(() => { const r = defaultRange(); return store.get(reportsKey(r.from, r.to)) ?? null })
   const [project, setProject] = useState('')
   const [from, setFrom] = useState(() => defaultRange().from)
@@ -78,8 +79,8 @@ export default function Reports() {
       </div>
       <Card className="mt-4 p-5">
         <div className="no-print mb-3 flex flex-wrap items-center gap-2">
-          <select className={inputAuto + ' w-auto font-semibold'} value={type} onChange={e => setType(e.target.value)}>{Object.entries(built.R).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select>
-          <div className="ml-auto flex gap-2"><Btn variant="secondary" onClick={() => window.print()}><Printer size={14} /> Print</Btn><Btn onClick={() => downloadCSV(rep.label.replace(/\s+/g, '-').toLowerCase(), rep.columns, rep.rows)} disabled={!rep.rows.length}>Export CSV</Btn></div>
+          <select className={inputAuto + ' w-auto font-semibold'} value={type} onChange={e => setType(e.target.value)}>{Object.entries(built.R).map(([k, v]) => { const locked = !allows('advanced_reports') && !BASIC_REPORTS.includes(k); return <option key={k} value={k} disabled={locked}>{v.label}{locked ? ' 🔒 Growth plan' : ''}</option> })}</select>
+          <div className="ml-auto flex gap-2"><Btn variant="secondary" onClick={() => window.print()}><Printer size={14} /> Print</Btn><Btn onClick={() => downloadCSV(rep.label.replace(/\s+/g, '-').toLowerCase(), rep.columns, rep.rows)} disabled={!rep.rows.length || !allows('csv_export')} title={allows('csv_export') ? undefined : 'CSV export is available on the Growth plan and above'}>Export CSV</Btn></div>
         </div>
         <h3 className="mb-1 text-base font-bold">{rep.label}</h3><p className="mb-3 text-xs text-slate-400">{project ? built.ps[0]?.name : 'All projects'} · {fmtDate(from)} to {fmtDate(to)}</p>
         {rep.rows.length === 0 ? <Empty title="No data for these filters" /> : (

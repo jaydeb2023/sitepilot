@@ -16,7 +16,7 @@ const STATUS_COLORS: Record<string, string> = { on_track: '#2250e8', delayed: '#
 const STATUS_LABEL: Record<string, string> = { on_track: 'On Track', delayed: 'Delayed', at_risk: 'At Risk', completed: 'Completed', planning: 'Planning' }
 
 export default function Overview() {
-  const { sb, role, can, profile } = useApp()
+  const { sb, role, can, profile, allows } = useApp()
   const [loading, setLoading] = useState(!store.has('overview'))
   const [data, setData] = useState<any>(store.get('overview') ?? null)
   const [project, setProject] = useState('')
@@ -119,7 +119,9 @@ export default function Overview() {
 
       <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Link href="/app/materials"><StatTile icon={<PackageSearch size={20} />} tone="amber" value={view.requests.length} label="Pending material requests" /></Link>
-        <Link href="/app/contractors"><StatTile icon={<FileCheck2 size={20} />} tone="purple" value={view.bills.length} label="Pending contractor bills" /></Link>
+        {allows('contractor_bills')
+          ? <Link href="/app/contractors"><StatTile icon={<FileCheck2 size={20} />} tone="purple" value={view.bills.length} label="Pending contractor bills" /></Link>
+          : <Link href="/app/expenses"><StatTile icon={<FileCheck2 size={20} />} tone="purple" value={view.pendExp.length} label="Expenses awaiting approval" /></Link>}
         <Link href="/app/labour"><StatTile icon={<Users size={20} />} tone="green" value={view.present} label="Workers present today" /></Link>
         <Link href="/app/tasks"><StatTile icon={<AlertTriangle size={20} />} tone="red" value={view.overdue} label="Overdue tasks" /></Link>
       </div>
@@ -177,7 +179,7 @@ export default function Overview() {
           <CardTitle>Pending Approvals</CardTitle>
           <Tabs value={tab} onChange={setTab} tabs={[
             { id: 'requests', label: 'Material Requests', badge: view.requests.length },
-            { id: 'bills', label: 'Contractor Bills', badge: view.bills.length },
+            ...(allows('contractor_bills') ? [{ id: 'bills' as const, label: 'Contractor Bills', badge: view.bills.length }] : []),
             { id: 'expenses', label: 'Expenses', badge: view.pendExp.length }]} />
           <div className="space-y-2.5">
             {tab === 'requests' && (view.requests.length === 0 ? <p className="py-6 text-center text-sm text-slate-400">Nothing pending</p> : view.requests.slice(0, 5).map((r: any) => (

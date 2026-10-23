@@ -1,6 +1,7 @@
 import { store, rowKey } from './store'
 import { NAV, Role } from './permissions'
 import { todayISO } from './format'
+import type { Feature } from './plans'
 
 export const SITE_REPORT_SELECT = '*, project:projects(name), creator:profiles!created_by(full_name), reviewer:profiles!reviewed_by(full_name)'
 
@@ -68,7 +69,7 @@ export async function fetchReports(sb: any, from: string, to: string) {
 }
 
 // Tables behind every generic list page (must match the select/order used by each page's <DataModule>)
-const L = (href: string, table: string, select: string | undefined, column: string, ascending: boolean) => ({ href, table, select, column, ascending })
+const L = (href: string, table: string, select: string | undefined, column: string, ascending: boolean, feature?: Feature) => ({ href, table, select, column, ascending, feature })
 export const LIST_MODULES = [
   L('/app/tasks', 'tasks', '*, project:projects(name), assignee:profiles!assignee_id(full_name)', 'due_date', true),
   L('/app/labour', 'attendance_records', '*, worker:workers(name, category), project:projects(name)', 'work_date', false),
@@ -78,16 +79,16 @@ export const LIST_MODULES = [
   L('/app/materials', 'materials', undefined, 'name', true),
   L('/app/purchases', 'purchase_orders', '*, supplier:suppliers(name), project:projects(name), material:materials(name, unit)', 'order_date', false),
   L('/app/purchases', 'suppliers', undefined, 'name', true),
-  L('/app/contractors', 'contractor_bills', '*, contractor:contractors(name), project:projects(name)', 'created_at', false),
-  L('/app/contractors', 'contractors', undefined, 'name', true),
-  L('/app/contractors', 'contractor_payments', '*, bill:contractor_bills(bill_no, contractor:contractors(name))', 'paid_on', false),
+  L('/app/contractors', 'contractor_bills', '*, contractor:contractors(name), project:projects(name)', 'created_at', false, 'contractor_bills'),
+  L('/app/contractors', 'contractors', undefined, 'name', true, 'contractor_bills'),
+  L('/app/contractors', 'contractor_payments', '*, bill:contractor_bills(bill_no, contractor:contractors(name))', 'paid_on', false, 'contractor_bills'),
   L('/app/expenses', 'expenses', '*, project:projects(name)', 'expense_date', false),
-  L('/app/expenses', 'budgets', '*, project:projects(name)', 'created_at', false),
-  L('/app/expenses', 'budget_revisions', '*, project:projects(name)', 'created_at', false),
+  L('/app/expenses', 'budgets', '*, project:projects(name)', 'created_at', false, 'budgets'),
+  L('/app/expenses', 'budget_revisions', '*, project:projects(name)', 'created_at', false, 'budgets'),
 ]
 
 /** Warms the cache for every page the user can open, right after login, so clicks are instant. */
-export async function prefetchAll(sb: any, role: Role) {
+export async function prefetchAll(sb: any, role: Role, allows: (f: Feature) => boolean = () => true) {
   const allowed = (href: string) => !!NAV.find(n => n.href === href)?.roles.includes(role)
   const jobs: (() => Promise<void>)[] = []
   const add = (href: string, key: string, run: () => Promise<any>) => { if (allowed(href) && !store.has(key)) jobs.push(async () => { try { store.set(key, await run()) } catch { /* page will load it itself */ } }) }
@@ -97,9 +98,10 @@ export async function prefetchAll(sb: any, role: Role) {
   add('/app/site-reports', 'site-reports', () => fetchSiteReports(sb))
   add('/app/documents', 'documents', () => fetchDocuments(sb))
   add('/app/materials', 'stock', () => fetchStock(sb))
-  add('/app/expenses', 'budget', () => fetchBudget(sb))
+  if (allows('budgets')) add('/app/expenses', 'budget', () => fetchBudget(sb))
   { const r = defaultRange(); add('/app/reports', reportsKey(r.from, r.to), () => fetchReports(sb, r.from, r.to)) }
   for (const m of LIST_MODULES) {
+    if (m.feature && !allows(m.feature)) continue
     add(m.href, rowKey(m.table, m.select, '', '', '', ''), async () => {
       const { data } = await sb.from(m.table).select(m.select || '*').order(m.column, { ascending: m.ascending }).limit(1000)
       return data || []
